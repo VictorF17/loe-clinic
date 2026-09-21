@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowRight, KeyRound } from "lucide-react";
 
 import { login, type LoginState } from "./actions";
+import { PasswordInput } from "./password-input";
 import { inputClass, primaryButtonClass, secondaryButtonClass } from "./styles";
 
 export function LoginForm() {
@@ -16,7 +17,7 @@ export function LoginForm() {
         <input name="email" type="email" autoComplete="email" required defaultValue={state.email ?? ""} className={inputClass} placeholder="voce@exemplo.com" />
       </label>
       <label className="grid gap-1.5 text-sm font-medium text-[#54382c]">Senha
-        <input name="password" type="password" autoComplete="current-password" required className={inputClass} placeholder="sua senha" />
+        <PasswordInput name="password" autoComplete="current-password" placeholder="sua senha" />
       </label>
       {state.error && <p role="alert" className="text-sm text-[#a23e2d]">{state.error}</p>}
       <button type="submit" disabled={pending} className={`mt-2 ${primaryButtonClass}`}>

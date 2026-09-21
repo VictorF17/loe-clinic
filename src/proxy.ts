@@ -10,7 +10,8 @@ export function proxy(request: NextRequest) {
 
   // A página de login decide sozinha (valida a sessão de verdade); redirecionar
   // daqui só pela presença do cookie causaria loop com um cookie inválido.
-  if (pathname === "/briefing/entrar" || hasCookie) return NextResponse.next();
+  const isPublic = ["/briefing/entrar", "/briefing/primeiro-acesso", "/briefing/ativar"].includes(pathname);
+  if (isPublic || hasCookie) return NextResponse.next();
   return NextResponse.redirect(new URL("/briefing/entrar", request.url));
 }
 

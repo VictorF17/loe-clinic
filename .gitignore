@@ -7,3 +7,8 @@ next-env.d.ts
 # env
 .env
 .env*.local
+.vercel
+.env*
+
+# guia operacional interno (fica um nível acima, mas nunca versionar cópias)
+RESET-DE-SENHA.md

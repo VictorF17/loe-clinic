@@ -21,7 +21,7 @@ export function BriefingShell({ children, userLabel }: { children: React.ReactNo
         </div>
       </header>
       <main className="mx-auto max-w-5xl px-5 py-12 sm:px-10 sm:py-16">{children}</main>
-      <footer className="mx-auto max-w-5xl px-5 pb-10 text-xs text-[#a8907f] sm:px-10">Área reservada ao briefing do site. Seus dados ficam vinculados ao seu acesso.</footer>
+      <footer className="mx-auto max-w-5xl px-5 pb-10 text-center text-xs text-[#a8907f] sm:px-10">Área reservada ao briefing do site. Seus dados ficam vinculados ao seu acesso.</footer>
     </div>
   );
 }

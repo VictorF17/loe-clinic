@@ -2,6 +2,7 @@
 //   node scripts/authorize-user.mjs                      → lista os usuários
 //   node scripts/authorize-user.mjs email@x.com "Nome"   → autoriza e imprime o link de ativação
 //   node scripts/authorize-user.mjs --link email@x.com   → gera um novo link de ativação (48 h)
+//   node scripts/authorize-user.mjs --reset email@x.com  → apaga a senha atual e gera link para criar outra
 //   node scripts/authorize-user.mjs --remove email@x.com → desativa o acesso
 // Lê SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY (ou VICTOR_DATABASE_SERVICE_ROLE_KEY),
 // BRIEFING_PROJECT_SLUG e SITE_URL do ambiente ou de .env.local.
@@ -55,6 +56,14 @@ if (first === "--remove" && second) {
   const { error } = await supabase.from("site_users").update({ active: false }).eq("project_id", project.id).eq("email", second.toLowerCase());
   if (error) throw error;
   console.log(`Acesso de ${second.toLowerCase()} desativado.`);
+} else if (first === "--reset" && second) {
+  const email = second.toLowerCase();
+  const { data, error } = await supabase.from("site_users").update({ password_hash: null })
+    .eq("project_id", project.id).eq("email", email).eq("active", true).select("id");
+  if (error) throw error;
+  if (!data.length) { console.log("E-mail não encontrado ou desativado."); process.exit(1); }
+  const link = await activationLink(email);
+  console.log(`Senha de ${email} apagada. Link para criar a nova (válido por ${ACTIVATION_HOURS} h):\n${link}`);
 } else if (first === "--link" && second) {
   const link = await activationLink(second.toLowerCase());
   console.log(link ? `Link de ativação (válido por ${ACTIVATION_HOURS} h):\n${link}` : "Esse e-mail não está aguardando primeiro acesso (não existe, está desativado ou já tem senha).");

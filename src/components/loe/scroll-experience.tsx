@@ -36,21 +36,43 @@ export function LoeScrollExperience() {
       const essence = document.getElementById("essencia");
       if (!scene || !visual || !copyFrame) return;
 
+      // Estado inicial fora das timelines: a entrada e a saída são disparadas
+      // por triggers próprios, antes e depois do pin.
+      gsap.set(images, { autoAlpha: 0, scale: 1.05 });
+      gsap.set(copy.slice(1), { autoAlpha: 0, y: 28 });
+      gsap.set(words.flat(), { autoAlpha: 0, y: 18 });
+
+      const pinStart = () => window.innerWidth < 768 ? "top 4%" : "top 12%";
+
+      // Só as trocas de imagem ficam presas na tela; o pin começa com a
+      // primeira imagem já visível.
       const timeline = gsap.timeline({
         scrollTrigger: {
           trigger: scene,
-          start: () => window.innerWidth < 768 ? "top 4%" : "top 12%",
-          end: () => `+=${Math.round(window.innerHeight * treatments.length * (window.innerWidth < 768 ? 0.62 : 0.72))}`,
+          start: pinStart,
+          end: () => `+=${Math.round(window.innerHeight * (treatments.length - 1) * (window.innerWidth < 768 ? 0.62 : 0.72))}`,
           pin: true,
           scrub: 0.8,
           anticipatePin: 1,
           invalidateOnRefresh: true,
+          refreshPriority: 1,
         },
       });
-
-      timeline.set(images, { autoAlpha: 0, scale: 1.05 }).set(copy.slice(1), { autoAlpha: 0, y: 28 }).set(words.flat(), { autoAlpha: 0, y: 18 }).fromTo(visual, { autoAlpha: 0, scale: 1, rotate: 0, clipPath: "inset(10% 10% round 36px)" }, { autoAlpha: 1, scale: 1, rotate: 0, clipPath: "inset(0% 0% round 32px)", duration: 0.7, ease: "power2.out" }).to(images[0], { autoAlpha: 1, scale: 1, duration: 0.75, ease: "power1.inOut" }, "<").fromTo(copyFrame, { autoAlpha: 0, y: 34 }, { autoAlpha: 1, y: 0, duration: 0.6, ease: "power2.out" }, "<0.12").to(words[0], { autoAlpha: 1, y: 0, stagger: 0.07, duration: 0.45, ease: "power3.out" }, "<0.16");
       treatments.slice(1).forEach((_, index) => timeline.to({}, { duration: 0.4 }).to(images[index], { autoAlpha: 0, scale: 0.96, duration: 0.75, ease: "power1.inOut" }).to(images[index + 1], { autoAlpha: 1, scale: 1, duration: 0.75, ease: "power1.inOut" }, "<").to(copy[index], { autoAlpha: 0, y: -18, duration: 0.55, ease: "power1.inOut" }, "<0.08").to(copy[index + 1], { autoAlpha: 1, y: 0, duration: 0.55, ease: "power1.inOut" }, "<").to(words[index + 1], { autoAlpha: 1, y: 0, stagger: 0.045, duration: 0.35, ease: "power2.out" }, "<0.1"));
-      timeline.to({}, { duration: 0.35 }).to(visual, { autoAlpha: 0, scale: 0.8, rotate: 6, clipPath: "inset(20% 18% round 36px)", duration: 0.7, ease: "power2.in" }).to(copyFrame, { autoAlpha: 0, y: -28, duration: 0.55, ease: "power2.in" }, "<");
+
+      // Entrada: acontece enquanto o título "Resultados Loê" sai da tela,
+      // no trecho entre a cena aparecer e o pin começar — sem espaço vazio.
+      gsap.timeline({ scrollTrigger: { trigger: scene, start: "top bottom", end: pinStart, scrub: 0.8, invalidateOnRefresh: true } })
+        .fromTo(visual, { autoAlpha: 0, scale: 1, rotate: 0, clipPath: "inset(10% 10% round 36px)" }, { autoAlpha: 1, scale: 1, rotate: 0, clipPath: "inset(0% 0% round 32px)", duration: 0.7, ease: "power2.out" })
+        .to(images[0], { autoAlpha: 1, scale: 1, duration: 0.75, ease: "power1.inOut" }, "<")
+        .fromTo(copyFrame, { autoAlpha: 0, y: 34 }, { autoAlpha: 1, y: 0, duration: 0.6, ease: "power2.out" }, "<0.12")
+        .to(words[0], { autoAlpha: 1, y: 0, stagger: 0.07, duration: 0.45, ease: "power3.out" }, "<0.16");
+
+      // Saída: começa quando o pin solta e termina enquanto "A essência Loê"
+      // entra — na volta, a imagem reaparece antes da essência sair da tela.
+      gsap.timeline({ scrollTrigger: { trigger: scene, start: () => timeline.scrollTrigger!.end, end: () => timeline.scrollTrigger!.end + window.innerHeight * 0.55, scrub: 0.8, invalidateOnRefresh: true } })
+        .to(visual, { autoAlpha: 0, scale: 0.8, rotate: 6, clipPath: "inset(20% 18% round 36px)", duration: 0.7, ease: "power2.in" })
+        .to(copyFrame, { autoAlpha: 0, y: -28, duration: 0.55, ease: "power2.in" }, "<");
       if (essence) gsap.fromTo(essence, { autoAlpha: 0.2, y: 72, scale: 0.96, clipPath: "inset(16% 8% round 40px)" }, { autoAlpha: 1, y: 0, scale: 1, clipPath: "inset(0% 0% round 0px)", ease: "power2.out", scrollTrigger: { trigger: essence, start: "top 92%", end: "top 36%", scrub: 0.8 } });
     }, root);
     return () => context.revert();
